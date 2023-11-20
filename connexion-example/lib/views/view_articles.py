@@ -57,4 +57,27 @@ def delete(user, article_id):
 
     return NoContent, HTTPStatus.OK
 
+def get_articles_by_year(user, year):
+    try:
+        year = int(year)
+    except ValueError:
+        return {"message": "The year must be a number."}, HTTPStatus.BAD_REQUEST
 
+    start_date = datetime(year, 1, 1)
+    end_date = datetime(year + 1, 1, 1)
+
+    articles = Article.query.filter(
+        Article.author_user_id == user['user_id'],
+        Article.release_date >= start_date,
+        Article.release_date < end_date
+    ).all()
+
+    return [
+       {
+           'article_id': article.article_id,
+           'title': article.title,
+           'content': article.content,
+           'release_date': article.release_date.isoformat(),
+       }
+       for article in articles
+    ], HTTPStatus.OK
